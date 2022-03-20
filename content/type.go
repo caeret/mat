@@ -9,22 +9,22 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"net/http"
-
-	routing "github.com/go-ozzo/ozzo-routing/v2"
+	
+	"github.com/caeret/mat"
 )
 
 // MIME types
 const (
-	JSON = routing.MIME_JSON
-	XML  = routing.MIME_XML
-	XML2 = routing.MIME_XML2
-	HTML = routing.MIME_HTML
+	JSON = mat.MIME_JSON
+	XML  = mat.MIME_XML
+	XML2 = mat.MIME_XML2
+	HTML = mat.MIME_HTML
 )
 
 // DataWriters lists all supported content types and the corresponding data writers.
 // By default, JSON, XML, and HTML are supported. You may modify this variable before calling TypeNegotiator
 // to customize supported data writers.
-var DataWriters = map[string]routing.DataWriter{
+var DataWriters = map[string]mat.DataWriter{
 	JSON: &JSONDataWriter{},
 	XML:  &XMLDataWriter{},
 	XML2: &XMLDataWriter{},
@@ -37,11 +37,11 @@ var DataWriters = map[string]routing.DataWriter{
 // The negotiator will determine the best response MIME type to use by checking the "Accept" HTTP header.
 // If no match is found, the first MIME type will be used.
 //
-// The negotiator will set the "Content-Type" response header as the chosen MIME type. It will call routing.Context.SetDataWriter()
+// The negotiator will set the "Content-Type" response header as the chosen MIME type. It will call mat.Context.SetDataWriter()
 // to set the appropriate data writer that can write data in the negotiated format.
 //
 // If you do not specify any supported MIME types, the negotiator will use "text/html" as the response MIME type.
-func TypeNegotiator(formats ...string) routing.Handler {
+func TypeNegotiator(formats ...string) mat.Handler {
 	if len(formats) == 0 {
 		formats = []string{HTML}
 	}
@@ -51,7 +51,7 @@ func TypeNegotiator(formats ...string) routing.Handler {
 		}
 	}
 
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		format := NegotiateContentType(c.Request, formats, formats[0])
 		c.SetDataWriter(DataWriters[format])
 		return nil
@@ -89,7 +89,7 @@ func (w *XMLDataWriter) Write(res http.ResponseWriter, data interface{}) (err er
 	return
 }
 
-// HTMLDataWriter sets the "Content-Type" response header as "text/html; charset=UTF-8" and calls routing.DefaultDataWriter to write the given data to the response.
+// HTMLDataWriter sets the "Content-Type" response header as "text/html; charset=UTF-8" and calls mat.DefaultDataWriter to write the given data to the response.
 type HTMLDataWriter struct{}
 
 // SetHeader sets the Content-Type response header.
@@ -98,5 +98,5 @@ func (w *HTMLDataWriter) SetHeader(res http.ResponseWriter) {
 }
 
 func (w *HTMLDataWriter) Write(res http.ResponseWriter, data interface{}) error {
-	return routing.DefaultDataWriter.Write(res, data)
+	return mat.DefaultDataWriter.Write(res, data)
 }

@@ -1,11 +1,11 @@
 # ozzo-routing
 
 [![GoDoc](https://godoc.org/github.com/go-ozzo/ozzo-routing?status.png)](http://godoc.org/github.com/go-ozzo/ozzo-routing)
-[![Build Status](https://travis-ci.org/go-ozzo/ozzo-routing.svg?branch=master)](https://travis-ci.org/go-ozzo/ozzo-routing)
+[![Build Status](https://travis-ci.org/go-ozzo/ozzo-mat.svg?branch=master)](https://travis-ci.org/go-ozzo/ozzo-routing)
 [![Coverage Status](https://coveralls.io/repos/github/go-ozzo/ozzo-routing/badge.svg?branch=master)](https://coveralls.io/github/go-ozzo/ozzo-routing?branch=master)
 [![Go Report](https://goreportcard.com/badge/github.com/go-ozzo/ozzo-routing)](https://goreportcard.com/report/github.com/go-ozzo/ozzo-routing)
 
-**You may consider using [go-rest-api](https://github.com/qiangxue/go-rest-api) to jumpstart your new RESTful applications with ozzo-routing.**
+**You may consider using [go-rest-api](https://github.com/qiangxue/go-rest-api) to jumpstart your new RESTful applications with ozzo-mat.**
 
 ## Description
 
@@ -22,7 +22,7 @@ It has the following features:
 * ready-to-use handlers sufficient for building RESTful APIs
 * graceful shutdown
 
-If you are using [fasthttp](https://github.com/valyala/fasthttp), you may use a similar routing package [fasthttp-routing](https://github.com/qiangxue/fasthttp-routing) which is adapted from ozzo-routing.
+If you are using [fasthttp](https://github.com/valyala/fasthttp), you may use a similar routing package [fasthttp-routing](https://github.com/qiangxue/fasthttp-routing) which is adapted from ozzo-mat.
 
 ## Requirements
 
@@ -33,12 +33,12 @@ Go 1.13 or above.
 In your Go project using `go mod`, run the following command to install the package:
 
 ```
-go get github.com/go-ozzo/ozzo-routing/v2
+go get github.com/caeret/mat
 ```
 
 ## Getting Started
 
-For a complete RESTful application boilerplate based on ozzo-routing, please refer to the [golang-restful-starter-kit](https://github.com/qiangxue/golang-restful-starter-kit). Below we describe how to create a simple REST API using ozzo-routing.
+For a complete RESTful application boilerplate based on ozzo-routing, please refer to the [golang-restful-starter-kit](https://github.com/qiangxue/golang-restful-starter-kit). Below we describe how to create a simple REST API using ozzo-mat.
 
 Create a `server.go` file with the following content:
 
@@ -48,16 +48,16 @@ package main
 import (
 	"log"
 	"net/http"
-	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/access"
-	"github.com/go-ozzo/ozzo-routing/v2/slash"
-	"github.com/go-ozzo/ozzo-routing/v2/content"
-	"github.com/go-ozzo/ozzo-routing/v2/fault"
-	"github.com/go-ozzo/ozzo-routing/v2/file"
+	"github.com/caeret/mat"
+	"github.com/caeret/mat/access"
+	"github.com/caeret/mat/slash"
+	"github.com/caeret/mat/content"
+	"github.com/caeret/mat/fault"
+	"github.com/caeret/mat/file"
 )
 
 func main() {
-	router := routing.New()
+	router := mat.New()
 
 	router.Use(
 		// all these handlers are shared by every route
@@ -72,13 +72,13 @@ func main() {
 		// these handlers are shared by the routes in the api group only
 		content.TypeNegotiator(content.JSON, content.XML),
 	)
-	api.Get("/users", func(c *routing.Context) error {
+	api.Get("/users", func(c *mat.Context) error {
 		return c.Write("user list")
 	})
-	api.Post("/users", func(c *routing.Context) error {
+	api.Post("/users", func(c *mat.Context) error {
 		return c.Write("create a new user")
 	})
-	api.Put(`/users/<id:\d+>`, func(c *routing.Context) error {
+	api.Put(`/users/<id:\d+>`, func(c *mat.Context) error {
 		return c.Write("update user " + c.Param("id"))
 	})
 
@@ -133,7 +133,7 @@ process as fast as working with a hash table, thanks to the inspiration from [ht
 To add a new route and its handlers to the routing table, call the `To` method like the following:
   
 ```go
-router := routing.New()
+router := mat.New()
 router.To("GET", "/users", m1, m2, h1)
 router.To("POST", "/users", m1, m2, h2)
 ```
@@ -171,9 +171,9 @@ can be used to match any number of arbitrary characters. Below are some examples
 When a URL path matches a route, the matching parameters on the URL path can be accessed via `Context.Param()`:
 
 ```go
-router := routing.New()
+router := mat.New()
 
-router.Get("/users/<username>", func (c *routing.Context) error {
+router.Get("/users/<username>", func (c *mat.Context) error {
 	fmt.Fprintf(c.Response, "Name: %v", c.Param("username"))
 	return nil
 })
@@ -186,7 +186,7 @@ Route group is a way of grouping together the routes which have the same route p
 share the same handlers that are registered with the group via its `Use` method. For example,
 
 ```go
-router := routing.New()
+router := mat.New()
 api := router.Group("/api")
 api.Use(m1, m2)
 api.Get("/users", h1).Post(h2)
@@ -211,7 +211,7 @@ Route groups can be nested. That is, a route group can create a child group by c
 serves as the top level route group. A child group inherits the handlers registered with its parent group. For example, 
 
 ```go
-router := routing.New()
+router := mat.New()
 router.Use(m1)
 
 api := router.Group("/api")
@@ -229,13 +229,13 @@ the `PUT /api/users/<id>` route is associated with the handlers `m1`, `m2`, `m3`
 ### Router
 
 Router manages the routing table and dispatches incoming requests to appropriate handlers. A router instance is created
-by calling the `routing.New()` method.
+by calling the `mat.New()` method.
 
 Because `Router` implements the `http.Handler` interface, it can be readily used to serve subtrees on existing Go servers.
 For example,
 
 ```go
-router := routing.New()
+router := mat.New()
 http.Handle("/", router)
 http.ListenAndServe(":8080", nil)
 ```
@@ -243,8 +243,8 @@ http.ListenAndServe(":8080", nil)
 
 ### Handlers
 
-A handler is a function with the signature `func(*routing.Context) error`. A handler is executed by the router if
-the incoming request URL path matches the route that the handler is associated with. Through the `routing.Context` 
+A handler is a function with the signature `func(*mat.Context) error`. A handler is executed by the router if
+the incoming request URL path matches the route that the handler is associated with. Through the `mat.Context` 
 parameter, you can access the request information in handlers.
 
 A route may be associated with multiple handlers. These handlers will be executed in the order that they are registered
@@ -260,7 +260,7 @@ and then compress and send the output to response.
 
 ### Context
 
-For each incoming request, a `routing.Context` object is populated with the request information and passed through
+For each incoming request, a `mat.Context` object is populated with the request information and passed through
 the handlers that need to handle the request. Handlers can get the request information via `Context.Request` and
 send a response back via `Context.Response`. The `Context.Param()` method allows handlers to access the URL path
 parameters that match the current route.
@@ -283,7 +283,7 @@ The public fields in the object being populated will receive the parsed data if 
 For example,
 
 ```go
-func foo(c *routing.Context) error {
+func foo(c *mat.Context) error {
     data := &struct{
         A string
         B bool
@@ -298,7 +298,7 @@ func foo(c *routing.Context) error {
 ```
 
 By default, `Context` supports reading data that are in JSON, XML, form, and multipart-form data.
-You may modify `routing.DataReaders` to add support for other data formats.
+You may modify `mat.DataReaders` to add support for other data formats.
 
 Note that when the data is read as form data, you may use struct tag named `form` to customize
 the name of the corresponding field in the form data. The form data reader also supports populating
@@ -327,8 +327,8 @@ When an incoming request has no matching route, the router will call the handler
 method. All the handlers registered via `Router.Use()` will also be called in advance. By default, the following two
 handlers are registered with `Router.NotFound()`:
 
-* `routing.MethodNotAllowedHandler`: a handler that sends an `Allow` HTTP header indicating the allowed HTTP methods for a requested URL
-* `routing.NotFoundHandler`: a handler triggering 404 HTTP error
+* `mat.MethodNotAllowedHandler`: a handler that sends an `Allow` HTTP header indicating the allowed HTTP methods for a requested URL
+* `mat.NotFoundHandler`: a handler triggering 404 HTTP error
 
 ## Serving Static Files
 
@@ -337,11 +337,11 @@ under the specified directories, while the latter serves the content of a single
 
 ```go
 import (
-	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/file"
+	"github.com/caeret/mat"
+	"github.com/caeret/mat/file"
 )
 
-router := routing.NewRouter()
+router := mat.NewRouter()
 
 // serve index file
 router.Get("/", file.Content("ui/index.html"))
@@ -378,13 +378,13 @@ The following code shows how these handlers may be used:
 import (
 	"log"
 	"net/http"
-	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/access"
-	"github.com/go-ozzo/ozzo-routing/v2/slash"
-	"github.com/go-ozzo/ozzo-routing/v2/fault"
+	"github.com/caeret/mat"
+	"github.com/caeret/mat/access"
+	"github.com/caeret/mat/slash"
+	"github.com/caeret/mat/fault"
 )
 
-router := routing.New()
+router := mat.New()
 
 router.Use(
 	access.Logger(log.Printf),
@@ -409,13 +409,13 @@ ozzo-routing also provides adapters to support using third-party `http.HandlerFu
 For example,
 
 ```go
-router := routing.New()
+router := mat.New()
 
 // using http.HandlerFunc
-router.Use(routing.HTTPHandlerFunc(http.NotFound))
+router.Use(mat.HTTPHandlerFunc(http.NotFound))
 
 // using http.Handler
-router.Use(routing.HTTPHandler(http.NotFoundHandler))
+router.Use(mat.HTTPHandler(http.NotFoundHandler))
 ```
 
 ## 3rd-Party Extensions and Code Examples

@@ -11,7 +11,6 @@ import (
 
 	"time"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -203,27 +202,27 @@ func TestHandlers(t *testing.T) {
 	req, _ := http.NewRequest("OPTIONS", "/users/", nil)
 	req.Header.Set("Origin", "https://example.com")
 	req.Header.Set("Access-Control-Request-Method", "PATCH")
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Equal(t, "https://example.com", res.Header().Get(headerAllowOrigin))
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("PATCH", "/users/", nil)
 	req.Header.Set("Origin", "https://example.com")
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Equal(t, "https://example.com", res.Header().Get(headerAllowOrigin))
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("PATCH", "/users/", nil)
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Equal(t, "", res.Header().Get(headerAllowOrigin))
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("OPTIONS", "/users/", nil)
 	req.Header.Set("Origin", "https://example.com")
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Equal(t, "", res.Header().Get(headerAllowOrigin))
 }

@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +21,7 @@ func TestRecovery(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/users/", nil)
-	c := routing.NewContext(res, req, h, handler1, handler2)
+	c := mat.NewContext(res, req, h, handler1, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusInternalServerError, res.Code)
 	assert.Equal(t, "abc", res.Body.String())
@@ -31,7 +30,7 @@ func TestRecovery(t *testing.T) {
 	buf.Reset()
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users/", nil)
-	c = routing.NewContext(res, req, h, handler2)
+	c = mat.NewContext(res, req, h, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusOK, res.Code)
 	assert.Equal(t, "test", res.Body.String())
@@ -40,7 +39,7 @@ func TestRecovery(t *testing.T) {
 	buf.Reset()
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users/", nil)
-	c = routing.NewContext(res, req, h, handler3, handler2)
+	c = mat.NewContext(res, req, h, handler3, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusInternalServerError, res.Code)
 	assert.Equal(t, "xyz", res.Body.String())
@@ -50,7 +49,7 @@ func TestRecovery(t *testing.T) {
 	buf.Reset()
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users/", nil)
-	c = routing.NewContext(res, req, h, handler4, handler2)
+	c = mat.NewContext(res, req, h, handler4, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusBadRequest, res.Code)
 	assert.Equal(t, "123", res.Body.String())
@@ -61,7 +60,7 @@ func TestRecovery(t *testing.T) {
 	h = Recovery(getLogger(&buf), convertError)
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users/", nil)
-	c = routing.NewContext(res, req, h, handler3, handler2)
+	c = mat.NewContext(res, req, h, handler3, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusInternalServerError, res.Code)
 	assert.Equal(t, "123", res.Body.String())
@@ -72,7 +71,7 @@ func TestRecovery(t *testing.T) {
 	h = Recovery(getLogger(&buf), convertError)
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users/", nil)
-	c = routing.NewContext(res, req, h, handler1, handler2)
+	c = mat.NewContext(res, req, h, handler1, handler2)
 	assert.Nil(t, c.Next())
 	assert.Equal(t, http.StatusInternalServerError, res.Code)
 	assert.Equal(t, "123", res.Body.String())
@@ -85,19 +84,19 @@ func getLogger(buf *bytes.Buffer) LogFunc {
 	}
 }
 
-func handler1(c *routing.Context) error {
+func handler1(c *mat.Context) error {
 	return errors.New("abc")
 }
 
-func handler2(c *routing.Context) error {
+func handler2(c *mat.Context) error {
 	c.Write("test")
 	return nil
 }
 
-func handler3(c *routing.Context) error {
+func handler3(c *mat.Context) error {
 	panic("xyz")
 }
 
-func handler4(c *routing.Context) error {
-	panic(routing.NewHTTPError(http.StatusBadRequest, "123"))
+func handler4(c *mat.Context) error {
+	panic(mat.NewHTTPError(http.StatusBadRequest, "123"))
 }

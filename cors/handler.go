@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/caeret/mat"
 )
 
 const (
@@ -56,11 +56,11 @@ var AllowAll = Options{
 }
 
 // Handler creates a routing handler that adds appropriate CORS headers according to the specified options and the request.
-func Handler(opts Options) routing.Handler {
+func Handler(opts Options) mat.Handler {
 
 	opts.init()
 
-	return func(c *routing.Context) (err error) {
+	return func(c *mat.Context) (err error) {
 		origin := c.Request.Header.Get(headerOrigin)
 		if origin == "" {
 			// the request is outside the scope of CORS

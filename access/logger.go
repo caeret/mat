@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/caeret/mat"
 )
 
 // LogFunc logs a message using the given format and optional arguments.
@@ -31,20 +31,20 @@ type LogWriterFunc func(req *http.Request, res *LogResponseWriter, elapsed float
 // request, as well as the elapsed time since the request first came through the middleware.
 // LogWriterFunc can then do whatever logging it needs to do.
 //
-//     import (
-//         "log"
-//         "github.com/go-ozzo/ozzo-routing/v2"
-//         "github.com/go-ozzo/ozzo-routing/v2/access"
-//         "net/http"
-//     )
+//	import (
+//	    "log"
+//	    "github.com/caeret/mat"
+//	    "github.com/caeret/mat/access"
+//	    "net/http"
+//	)
 //
-//     func myCustomLogger(req http.Context, res access.LogResponseWriter, elapsed int64) {
-//         // Do something with the request, response, and elapsed time data here
-//     }
-//     r := routing.New()
-//     r.Use(access.CustomLogger(myCustomLogger))
-func CustomLogger(loggerFunc LogWriterFunc) routing.Handler {
-	return func(c *routing.Context) error {
+//	func myCustomLogger(req http.Context, res access.LogResponseWriter, elapsed int64) {
+//	    // Do something with the request, response, and elapsed time data here
+//	}
+//	r := mat.New()
+//	r.Use(access.CustomLogger(myCustomLogger))
+func CustomLogger(loggerFunc LogWriterFunc) mat.Handler {
+	return func(c *mat.Context) error {
 		startTime := time.Now()
 
 		req := c.Request
@@ -65,15 +65,15 @@ func CustomLogger(loggerFunc LogWriterFunc) routing.Handler {
 // The access log messages contain information including client IPs, time used to serve each request, request line,
 // response status and size.
 //
-//     import (
-//         "log"
-//         "github.com/go-ozzo/ozzo-routing/v2"
-//         "github.com/go-ozzo/ozzo-routing/v2/access"
-//     )
+//	import (
+//	    "log"
+//	    "github.com/caeret/mat"
+//	    "github.com/caeret/mat/access"
+//	)
 //
-//     r := routing.New()
-//     r.Use(access.Logger(log.Printf))
-func Logger(log LogFunc) routing.Handler {
+//	r := mat.New()
+//	r.Use(access.Logger(log.Printf))
+func Logger(log LogFunc) mat.Handler {
 	var logger = func(req *http.Request, rw *LogResponseWriter, elapsed float64) {
 		clientIP := GetClientIP(req)
 		requestLine := fmt.Sprintf("%s %s %s", req.Method, req.URL.String(), req.Proto)

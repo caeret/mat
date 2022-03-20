@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/caeret/mat"
 )
 
 // Remover returns a handler that removes the trailing slash (if any) from the requested URL.
@@ -18,19 +18,19 @@ import (
 // be used for redirecting GET requests. For other requests, the status code will be http.StatusTemporaryRedirect (307).
 // If the original URL has no trailing slash, the handler will do nothing. For example,
 //
-//     import (
-//         "net/http"
-//         "github.com/go-ozzo/ozzo-routing/v2"
-//         "github.com/go-ozzo/ozzo-routing/v2/slash"
-//     )
+//	import (
+//	    "net/http"
+//	    "github.com/caeret/mat"
+//	    "github.com/caeret/mat/slash"
+//	)
 //
-//     r := routing.New()
-//     r.Use(slash.Remover(http.StatusMovedPermanently))
+//	r := mat.New()
+//	r.Use(slash.Remover(http.StatusMovedPermanently))
 //
 // Note that Remover relies on HTTP redirection to remove the trailing slashes.
 // If you do not want redirection, please set `Router.IgnoreTrailingSlash` to be true without using Remover.
-func Remover(status int) routing.Handler {
-	return func(c *routing.Context) error {
+func Remover(status int) mat.Handler {
+	return func(c *mat.Context) error {
 		if c.Request.URL.Path != "/" && strings.HasSuffix(c.Request.URL.Path, "/") {
 			if c.Request.Method != "GET" {
 				status = http.StatusTemporaryRedirect

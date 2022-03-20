@@ -11,10 +11,9 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/go-ozzo/ozzo-routing/v2"
 )
 
-// User is the key used to store and retrieve the user identity information in routing.Context
+// User is the key used to store and retrieve the user identity information in mat.Context
 const User = "User"
 
 // Identity represents an authenticated user. If a user is successfully authenticated by
@@ -26,42 +25,42 @@ type Identity interface{}
 var DefaultRealm = "API"
 
 // BasicAuthFunc is the function that does the actual user authentication according to the given username and password.
-type BasicAuthFunc func(c *routing.Context, username, password string) (Identity, error)
+type BasicAuthFunc func(c *mat.Context, username, password string) (Identity, error)
 
-// Basic returns a routing.Handler that performs HTTP basic authentication.
+// Basic returns a mat.Handler that performs HTTP basic authentication.
 // It can be used like the following:
 //
-//   import (
-//     "errors"
-//     "fmt"
-//     "net/http"
-//     "github.com/go-ozzo/ozzo-routing/v2"
-//     "github.com/go-ozzo/ozzo-routing/v2/auth"
-//   )
-//   func main() {
-//     r := routing.New()
-//     r.Use(auth.Basic(func(c *routing.Context, username, password string) (auth.Identity, error) {
-//       if username == "demo" && password == "foo" {
-//         return auth.Identity(username), nil
-//       }
-//       return nil, errors.New("invalid credential")
-//     }))
-//     r.Get("/demo", func(c *routing.Context) error {
-//       fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
-//       return nil
-//     })
-//   }
+//	import (
+//	  "errors"
+//	  "fmt"
+//	  "net/http"
+//	  "github.com/caeret/mat"
+//	  "github.com/caeret/mat/auth"
+//	)
+//	func main() {
+//	  r := mat.New()
+//	  r.Use(auth.Basic(func(c *mat.Context, username, password string) (auth.Identity, error) {
+//	    if username == "demo" && password == "foo" {
+//	      return auth.Identity(username), nil
+//	    }
+//	    return nil, errors.New("invalid credential")
+//	  }))
+//	  r.Get("/demo", func(c *mat.Context) error {
+//	    fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
+//	    return nil
+//	  })
+//	}
 //
 // By default, the auth realm is named as "API". You may customize it by specifying the realm parameter.
 //
 // When authentication fails, a "WWW-Authenticate" header will be sent, and an http.StatusUnauthorized
 // error will be returned.
-func Basic(fn BasicAuthFunc, realm ...string) routing.Handler {
+func Basic(fn BasicAuthFunc, realm ...string) mat.Handler {
 	name := DefaultRealm
 	if len(realm) > 0 {
 		name = realm[0]
 	}
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		username, password := parseBasicAuth(c.Request.Header.Get("Authorization"))
 		identity, e := fn(c, username, password)
 		if e == nil {
@@ -69,7 +68,7 @@ func Basic(fn BasicAuthFunc, realm ...string) routing.Handler {
 			return nil
 		}
 		c.Response.Header().Set("WWW-Authenticate", `Basic realm="`+name+`"`)
-		return routing.NewHTTPError(http.StatusUnauthorized, e.Error())
+		return mat.NewHTTPError(http.StatusUnauthorized, e.Error())
 	}
 }
 
@@ -86,42 +85,42 @@ func parseBasicAuth(auth string) (username, password string) {
 }
 
 // TokenAuthFunc is the function for authenticating a user based on a secret token.
-type TokenAuthFunc func(c *routing.Context, token string) (Identity, error)
+type TokenAuthFunc func(c *mat.Context, token string) (Identity, error)
 
-// Bearer returns a routing.Handler that performs HTTP authentication based on bearer token.
+// Bearer returns a mat.Handler that performs HTTP authentication based on bearer token.
 // It can be used like the following:
 //
-//   import (
-//     "errors"
-//     "fmt"
-//     "net/http"
-//     "github.com/go-ozzo/ozzo-routing/v2"
-//     "github.com/go-ozzo/ozzo-routing/v2/auth"
-//   )
-//   func main() {
-//     r := routing.New()
-//     r.Use(auth.Bearer(func(c *routing.Context, token string) (auth.Identity, error) {
-//       if token == "secret" {
-//         return auth.Identity("demo"), nil
-//       }
-//       return nil, errors.New("invalid credential")
-//     }))
-//     r.Get("/demo", func(c *routing.Context) error {
-//       fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
-//       return nil
-//     })
-//   }
+//	import (
+//	  "errors"
+//	  "fmt"
+//	  "net/http"
+//	  "github.com/caeret/mat"
+//	  "github.com/caeret/mat/auth"
+//	)
+//	func main() {
+//	  r := mat.New()
+//	  r.Use(auth.Bearer(func(c *mat.Context, token string) (auth.Identity, error) {
+//	    if token == "secret" {
+//	      return auth.Identity("demo"), nil
+//	    }
+//	    return nil, errors.New("invalid credential")
+//	  }))
+//	  r.Get("/demo", func(c *mat.Context) error {
+//	    fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
+//	    return nil
+//	  })
+//	}
 //
 // By default, the auth realm is named as "API". You may customize it by specifying the realm parameter.
 //
 // When authentication fails, a "WWW-Authenticate" header will be sent, and an http.StatusUnauthorized
 // error will be returned.
-func Bearer(fn TokenAuthFunc, realm ...string) routing.Handler {
+func Bearer(fn TokenAuthFunc, realm ...string) mat.Handler {
 	name := DefaultRealm
 	if len(realm) > 0 {
 		name = realm[0]
 	}
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		token := parseBearerAuth(c.Request.Header.Get("Authorization"))
 		identity, e := fn(c, token)
 		if e == nil {
@@ -129,7 +128,7 @@ func Bearer(fn TokenAuthFunc, realm ...string) routing.Handler {
 			return nil
 		}
 		c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
-		return routing.NewHTTPError(http.StatusUnauthorized, e.Error())
+		return mat.NewHTTPError(http.StatusUnauthorized, e.Error())
 	}
 }
 
@@ -145,41 +144,41 @@ func parseBearerAuth(auth string) string {
 // TokenName is the query parameter name for auth token.
 var TokenName = "access-token"
 
-// Query returns a routing.Handler that performs authentication based on a token passed via a query parameter.
+// Query returns a mat.Handler that performs authentication based on a token passed via a query parameter.
 // It can be used like the following:
 //
-//   import (
-//     "errors"
-//     "fmt"
-//     "net/http"
-//     "github.com/go-ozzo/ozzo-routing/v2"
-//     "github.com/go-ozzo/ozzo-routing/v2/auth"
-//   )
-//   func main() {
-//     r := routing.New()
-//     r.Use(auth.Query(func(token string) (auth.Identity, error) {
-//       if token == "secret" {
-//         return auth.Identity("demo"), nil
-//       }
-//       return nil, errors.New("invalid credential")
-//     }))
-//     r.Get("/demo", func(c *routing.Context) error {
-//       fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
-//       return nil
-//     })
-//   }
+//	import (
+//	  "errors"
+//	  "fmt"
+//	  "net/http"
+//	  "github.com/caeret/mat"
+//	  "github.com/caeret/mat/auth"
+//	)
+//	func main() {
+//	  r := mat.New()
+//	  r.Use(auth.Query(func(token string) (auth.Identity, error) {
+//	    if token == "secret" {
+//	      return auth.Identity("demo"), nil
+//	    }
+//	    return nil, errors.New("invalid credential")
+//	  }))
+//	  r.Get("/demo", func(c *mat.Context) error {
+//	    fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
+//	    return nil
+//	  })
+//	}
 //
 // When authentication fails, an http.StatusUnauthorized error will be returned.
-func Query(fn TokenAuthFunc, tokenName ...string) routing.Handler {
+func Query(fn TokenAuthFunc, tokenName ...string) mat.Handler {
 	name := TokenName
 	if len(tokenName) > 0 {
 		name = tokenName[0]
 	}
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		token := c.Request.URL.Query().Get(name)
 		identity, err := fn(c, token)
 		if err != nil {
-			return routing.NewHTTPError(http.StatusUnauthorized, err.Error())
+			return mat.NewHTTPError(http.StatusUnauthorized, err.Error())
 		}
 		c.Set(User, identity)
 		return nil
@@ -187,10 +186,10 @@ func Query(fn TokenAuthFunc, tokenName ...string) routing.Handler {
 }
 
 // JWTTokenHandler represents a handler function that handles the parsed JWT token.
-type JWTTokenHandler func(*routing.Context, *jwt.Token) error
+type JWTTokenHandler func(*mat.Context, *jwt.Token) error
 
 // VerificationKeyHandler represents a handler function that gets a dynamic VerificationKey
-type VerificationKeyHandler func(*routing.Context) string
+type VerificationKeyHandler func(*mat.Context) string
 
 // JWTOptions represents the options that can be used with the JWT handler.
 type JWTOptions struct {
@@ -205,7 +204,7 @@ type JWTOptions struct {
 }
 
 // DefaultJWTTokenHandler stores the parsed JWT token in the routing context with the key named "JWT".
-func DefaultJWTTokenHandler(c *routing.Context, token *jwt.Token) error {
+func DefaultJWTTokenHandler(c *mat.Context, token *jwt.Token) error {
 	c.Set("JWT", token)
 	return nil
 }
@@ -219,39 +218,39 @@ func DefaultJWTTokenHandler(c *routing.Context, token *jwt.Token) error {
 //
 // JWT can be used like the following:
 //
-//   import (
-//     "errors"
-//     "fmt"
-//     "net/http"
-//     "github.com/dgrijalva/jwt-go"
-//     "github.com/go-ozzo/ozzo-routing/v2"
-//     "github.com/go-ozzo/ozzo-routing/v2/auth"
-//   )
-//   func main() {
-//     signingKey := "secret-key"
-//     r := routing.New()
+//	import (
+//	  "errors"
+//	  "fmt"
+//	  "net/http"
+//	  "github.com/dgrijalva/jwt-go"
+//	  "github.com/caeret/mat"
+//	  "github.com/caeret/mat/auth"
+//	)
+//	func main() {
+//	  signingKey := "secret-key"
+//	  r := mat.New()
 //
-//     r.Get("/login", func(c *routing.Context) error {
-//       id, err := authenticate(c)
-//       if err != nil {
-//         return err
-//       }
-//       token, err := auth.NewJWT(jwt.MapClaims{
-//         "id": id
-//       }, signingKey)
-//       if err != nil {
-//         return err
-//       }
-//       return c.Write(token)
-//     })
+//	  r.Get("/login", func(c *mat.Context) error {
+//	    id, err := authenticate(c)
+//	    if err != nil {
+//	      return err
+//	    }
+//	    token, err := auth.NewJWT(jwt.MapClaims{
+//	      "id": id
+//	    }, signingKey)
+//	    if err != nil {
+//	      return err
+//	    }
+//	    return c.Write(token)
+//	  })
 //
-//     r.Use(auth.JWT(signingKey))
-//     r.Get("/restricted", func(c *routing.Context) error {
-//       claims := c.Get("JWT").(*jwt.Token).Claims.(jwt.MapClaims)
-//       return c.Write(fmt.Sprint("Welcome, %v!", claims["id"]))
-//     })
-//   }
-func JWT(verificationKey string, options ...JWTOptions) routing.Handler {
+//	  r.Use(auth.JWT(signingKey))
+//	  r.Get("/restricted", func(c *mat.Context) error {
+//	    claims := c.Get("JWT").(*jwt.Token).Claims.(jwt.MapClaims)
+//	    return c.Write(fmt.Sprint("Welcome, %v!", claims["id"]))
+//	  })
+//	}
+func JWT(verificationKey string, options ...JWTOptions) mat.Handler {
 	var opt JWTOptions
 	if len(options) > 0 {
 		opt = options[0]
@@ -268,7 +267,7 @@ func JWT(verificationKey string, options ...JWTOptions) routing.Handler {
 	parser := &jwt.Parser{
 		ValidMethods: []string{opt.SigningMethod},
 	}
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		header := c.Request.Header.Get("Authorization")
 		message := ""
 		if opt.GetVerificationKey != nil {
@@ -287,9 +286,9 @@ func JWT(verificationKey string, options ...JWTOptions) routing.Handler {
 
 		c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+opt.Realm+`"`)
 		if message != "" {
-			return routing.NewHTTPError(http.StatusUnauthorized, message)
+			return mat.NewHTTPError(http.StatusUnauthorized, message)
 		}
-		return routing.NewHTTPError(http.StatusUnauthorized)
+		return mat.NewHTTPError(http.StatusUnauthorized)
 	}
 }
 

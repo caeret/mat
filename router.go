@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package routing provides high performance and powerful HTTP routing capabilities.
-package routing
+package mat
 
 import (
 	"net/http"
@@ -216,7 +216,7 @@ func MethodNotAllowedHandler(c *Context) error {
 	return nil
 }
 
-// HTTPHandlerFunc adapts a http.HandlerFunc into a routing.Handler.
+// HTTPHandlerFunc adapts a http.HandlerFunc into a mat.Handler.
 func HTTPHandlerFunc(h http.HandlerFunc) Handler {
 	return func(c *Context) error {
 		h(c.Response, c.Request)
@@ -224,7 +224,7 @@ func HTTPHandlerFunc(h http.HandlerFunc) Handler {
 	}
 }
 
-// HTTPHandler adapts a http.Handler into a routing.Handler.
+// HTTPHandler adapts a http.Handler into a mat.Handler.
 func HTTPHandler(h http.Handler) Handler {
 	return func(c *Context) error {
 		h.ServeHTTP(c.Response, c.Request)

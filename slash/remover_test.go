@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +16,7 @@ func TestRemover(t *testing.T) {
 	h := Remover(http.StatusMovedPermanently)
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/users/", nil)
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	err := h(c)
 	assert.Nil(t, err, "return value is nil")
 	assert.Equal(t, http.StatusMovedPermanently, res.Code)
@@ -25,7 +24,7 @@ func TestRemover(t *testing.T) {
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/", nil)
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err, "return value is nil")
 	assert.Equal(t, http.StatusOK, res.Code)
@@ -33,7 +32,7 @@ func TestRemover(t *testing.T) {
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/users", nil)
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err, "return value is nil")
 	assert.Equal(t, http.StatusOK, res.Code)
@@ -41,7 +40,7 @@ func TestRemover(t *testing.T) {
 
 	res = httptest.NewRecorder()
 	req, _ = http.NewRequest("POST", "/users/", nil)
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err, "return value is nil")
 	assert.Equal(t, http.StatusTemporaryRedirect, res.Code)

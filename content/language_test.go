@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +18,7 @@ func TestLanguageNegotiator(t *testing.T) {
 
 	// test no arguments
 	res := httptest.NewRecorder()
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	h := LanguageNegotiator()
 	assert.Nil(t, h(c))
 	assert.Equal(t, "en-US", c.Get(Language))

@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +27,7 @@ func TestCustomLogger(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "http://127.0.0.1/users", nil)
-	c := routing.NewContext(res, req, h, handler1)
+	c := mat.NewContext(res, req, h, handler1)
 	assert.NotNil(t, c.Next())
 	assert.Contains(t, buf.String(), "GET http://127.0.0.1/users")
 }
@@ -39,7 +38,7 @@ func TestLogger(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "http://127.0.0.1/users", nil)
-	c := routing.NewContext(res, req, h, handler1)
+	c := mat.NewContext(res, req, h, handler1)
 	assert.NotNil(t, c.Next())
 	assert.Contains(t, buf.String(), "GET http://127.0.0.1/users")
 }
@@ -78,6 +77,6 @@ func getLogger(buf *bytes.Buffer) LogFunc {
 	}
 }
 
-func handler1(c *routing.Context) error {
+func handler1(c *mat.Context) error {
 	return errors.New("abc")
 }

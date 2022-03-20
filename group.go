@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package routing
+package mat
 
 import (
 	"reflect"
@@ -71,7 +71,7 @@ func (rg *RouteGroup) Trace(path string, handlers ...Handler) *Route {
 	return rg.add("TRACE", path, handlers)
 }
 
-// Any adds a route with the given route, handlers, and the HTTP methods as listed in routing.Methods.
+// Any adds a route with the given route, handlers, and the HTTP methods as listed in mat.Methods.
 func (rg *RouteGroup) Any(path string, handlers ...Handler) *Route {
 	return rg.To(strings.Join(Methods, ","), path, handlers...)
 }

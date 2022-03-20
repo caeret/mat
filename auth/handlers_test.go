@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +31,7 @@ func TestParseBasicAuth(t *testing.T) {
 	}
 }
 
-func basicAuth(c *routing.Context, username, password string) (Identity, error) {
+func basicAuth(c *mat.Context, username, password string) (Identity, error) {
 	if username == "Aladdin" && password == "open sesame" {
 		return "yes", nil
 	}
@@ -43,7 +42,7 @@ func TestBasic(t *testing.T) {
 	h := Basic(basicAuth, "App")
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/users/", nil)
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	err := h(c)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "no", err.Error())
@@ -54,7 +53,7 @@ func TestBasic(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/users/", nil)
 	req.Header.Set("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err)
 	assert.Equal(t, "", res.Header().Get("WWW-Authenticate"))
@@ -77,7 +76,7 @@ func TestParseBearerToken(t *testing.T) {
 	}
 }
 
-func bearerAuth(c *routing.Context, token string) (Identity, error) {
+func bearerAuth(c *mat.Context, token string) (Identity, error) {
 	if token == "Aladdin:open sesame" {
 		return "yes", nil
 	}
@@ -88,7 +87,7 @@ func TestBearer(t *testing.T) {
 	h := Bearer(bearerAuth, "App")
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/users/", nil)
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	err := h(c)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "no", err.Error())
@@ -99,7 +98,7 @@ func TestBearer(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/users/", nil)
 	req.Header.Set("Authorization", "Bearer QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err)
 	assert.Equal(t, "", res.Header().Get("WWW-Authenticate"))
@@ -108,7 +107,7 @@ func TestBearer(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/users/", nil)
 	req.Header.Set("Authorization", "Bearer QW")
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "no", err.Error())
@@ -121,7 +120,7 @@ func TestQuery(t *testing.T) {
 	h := Query(bearerAuth, "token")
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/users", nil)
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	err := h(c)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "no", err.Error())
@@ -130,7 +129,7 @@ func TestQuery(t *testing.T) {
 
 	req, _ = http.NewRequest("GET", "/users?token=Aladdin:open sesame", nil)
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	err = h(c)
 	assert.Nil(t, err)
 	assert.Equal(t, "", res.Header().Get("WWW-Authenticate"))
@@ -150,7 +149,7 @@ func TestJWT(t *testing.T) {
 		res := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/users/", nil)
 		req.Header.Set("Authorization", "Bearer "+tokenString)
-		c := routing.NewContext(res, req)
+		c := mat.NewContext(res, req)
 		err = h(c)
 		assert.Nil(t, err)
 		token := c.Get("JWT")
@@ -173,7 +172,7 @@ func TestJWT(t *testing.T) {
 		res := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/users/", nil)
 		req.Header.Set("Authorization", "Bearer "+bearer)
-		c := routing.NewContext(res, req)
+		c := mat.NewContext(res, req)
 		err := h(c)
 		assert.NotNil(t, err)
 	}
@@ -184,7 +183,7 @@ func TestJWT(t *testing.T) {
 		res := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/users/", nil)
 		req.Header.Set("Authorization", "Bearer QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
-		c := routing.NewContext(res, req)
+		c := mat.NewContext(res, req)
 		err := h(c)
 		assert.NotNil(t, err)
 		assert.Equal(t, `Bearer realm="API"`, res.Header().Get("WWW-Authenticate"))
@@ -199,7 +198,7 @@ func TestJWT(t *testing.T) {
 		res := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/users/", nil)
 		req.Header.Set("Authorization", "Bearer QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
-		c := routing.NewContext(res, req)
+		c := mat.NewContext(res, req)
 		err := h(c)
 		assert.NotNil(t, err)
 		assert.Equal(t, `Bearer realm="App"`, res.Header().Get("WWW-Authenticate"))

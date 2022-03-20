@@ -7,11 +7,12 @@ package content
 import (
 	"net/http"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/golang/gddo/httputil/header"
+
+	"github.com/caeret/mat"
 )
 
-// Language is the key used to store and retrieve the chosen language in routing.Context
+// Language is the key used to store and retrieve the chosen language in mat.Context
 const Language = "Language"
 
 // LanguageNegotiator returns a content language negotiation handler.
@@ -20,20 +21,20 @@ const Language = "Language"
 // The negotiator will determine the best language to use by checking the Accept-Language request header.
 // If no match is found, the first language will be used.
 //
-// In a handler, you can access the chosen language through routing.Context like the following:
+// In a handler, you can access the chosen language through mat.Context like the following:
 //
-//     func(c *routing.Context) error {
-//         language := c.Get(content.Language).(string)
-//     }
+//	func(c *mat.Context) error {
+//	    language := c.Get(content.Language).(string)
+//	}
 //
 // If you do not specify languages, the negotiator will set the language to be "en-US".
-func LanguageNegotiator(languages ...string) routing.Handler {
+func LanguageNegotiator(languages ...string) mat.Handler {
 	if len(languages) == 0 {
 		languages = []string{"en-US"}
 	}
 	defaultLanguage := languages[0]
 
-	return func(c *routing.Context) error {
+	return func(c *mat.Context) error {
 		language := negotiateLanguage(c.Request, languages, defaultLanguage)
 		c.Set(Language, language)
 		return nil

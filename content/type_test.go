@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +48,7 @@ func TestTypeNegotiator(t *testing.T) {
 
 	// test no arguments
 	res := httptest.NewRecorder()
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	h := TypeNegotiator()
 	assert.Nil(t, h(c))
 	c.Write("xyz")
@@ -58,7 +57,7 @@ func TestTypeNegotiator(t *testing.T) {
 
 	// test format chosen based on Accept
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	h = TypeNegotiator(JSON, XML)
 	assert.Nil(t, h(c))
 	assert.Nil(t, c.Write("xyz"))
@@ -68,7 +67,7 @@ func TestTypeNegotiator(t *testing.T) {
 	// test default format used when no match
 	req.Header.Set("Accept", "application/pdf")
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Nil(t, c.Write("xyz"))
 	assert.Equal(t, "application/json", res.Header().Get("Content-Type"))
@@ -107,7 +106,7 @@ func TestTypeNegotiatorWithVersion(t *testing.T) {
 
 	// test no arguments
 	res := httptest.NewRecorder()
-	c := routing.NewContext(res, req)
+	c := mat.NewContext(res, req)
 	h := TypeNegotiator()
 	assert.Nil(t, h(c))
 	c.Write("xyz")
@@ -119,7 +118,7 @@ func TestTypeNegotiatorWithVersion(t *testing.T) {
 
 	// test format chosen based on Accept
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	h = TypeNegotiator(v2JSON, v1JSON, XML)
 	assert.Nil(t, h(c))
 	assert.Nil(t, c.Write("xyz"))
@@ -129,7 +128,7 @@ func TestTypeNegotiatorWithVersion(t *testing.T) {
 	// test default format used when no match
 	req.Header.Set("Accept", "application/pdf")
 	res = httptest.NewRecorder()
-	c = routing.NewContext(res, req)
+	c = mat.NewContext(res, req)
 	assert.Nil(t, h(c))
 	assert.Nil(t, c.Write("xyz"))
 	assert.Equal(t, v2JSON, res.Header().Get("Content-Type"))
