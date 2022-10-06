@@ -115,7 +115,7 @@ func (rg *RouteGroup) With(handlers ...Handler) *RouteGroup {
 }
 
 // Provide adds routes to the group by provided func
-func (rg *RouteGroup) Provide(fn func(group *RouteGroup)) *RouteGroup {
+func (rg *RouteGroup) Provide(fn func(*RouteGroup)) *RouteGroup {
 	fn(rg)
 	return rg
 }
