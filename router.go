@@ -29,6 +29,7 @@ type (
 		maxParams           int
 		notFound            []Handler
 		notFoundHandlers    []Handler
+		IPExtractor         IPExtractor
 	}
 
 	// routeStore stores route paths and the corresponding handlers.

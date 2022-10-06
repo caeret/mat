@@ -5,7 +5,9 @@
 package mat
 
 import (
+	"net"
 	"net/http"
+	"strings"
 )
 
 // Context represents the contextual data and environment while processing an incoming HTTP request.
@@ -147,6 +149,26 @@ func (c *Context) URL(route string, pairs ...interface{}) string {
 		return r.URL(pairs...)
 	}
 	return ""
+}
+
+// RealIP returns the real client ip
+func (c *Context) RealIP() string {
+	if c.router.IPExtractor != nil {
+		return c.router.IPExtractor(c.Request)
+	}
+	// Fall back to legacy behavior
+	if ip := c.Request.Header.Get(HeaderXForwardedFor); ip != "" {
+		i := strings.IndexAny(ip, ",")
+		if i > 0 {
+			return strings.TrimSpace(ip[:i])
+		}
+		return ip
+	}
+	if ip := c.Request.Header.Get(HeaderXRealIP); ip != "" {
+		return ip
+	}
+	ra, _, _ := net.SplitHostPort(c.Request.RemoteAddr)
+	return ra
 }
 
 // Read populates the given struct variable with the data from the current request.
