@@ -103,6 +103,23 @@ func (rg *RouteGroup) Group(prefix string, handlers ...Handler) *RouteGroup {
 	return newRouteGroup(rg.prefix+prefix, rg.router, handlers)
 }
 
+// With creates a RouteGroup with an empty route path prefix and handlers.
+// The new group will combine the existing path prefix with the new one.
+// The new group will inherit the handlers registered
+// with the current group and provided handlers.
+func (rg *RouteGroup) With(handlers ...Handler) *RouteGroup {
+	newHandlers := make([]Handler, len(rg.handlers)+len(handlers))
+	copy(newHandlers, rg.handlers)
+	copy(newHandlers[len(rg.handlers):], handlers)
+	return newRouteGroup(rg.prefix, rg.router, newHandlers)
+}
+
+// Provide adds routes to the group by provided func
+func (rg *RouteGroup) Provide(fn func(group *RouteGroup)) *RouteGroup {
+	fn(rg)
+	return rg
+}
+
 // Use registers one or multiple handlers to the current route group.
 // These handlers will be shared by all routes belong to this group and its subgroups.
 func (rg *RouteGroup) Use(handlers ...Handler) {
