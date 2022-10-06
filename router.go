@@ -176,6 +176,10 @@ func (r *Router) findAllowedMethods(path string) map[string]bool {
 	return methods
 }
 
+func (r *Router) FindAllowedMethods(path string) map[string]bool {
+	return r.findAllowedMethods(path)
+}
+
 func (r *Router) normalizeRequestPath(path string) string {
 	if r.IgnoreTrailingSlash && len(path) > 1 && path[len(path)-1] == '/' {
 		for i := len(path) - 2; i > 0; i-- {
