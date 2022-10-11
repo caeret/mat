@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/armon/go-radix"
 )
 
 type (
@@ -29,7 +31,9 @@ type (
 		maxParams           int
 		notFound            []Handler
 		notFoundHandlers    []Handler
-		IPExtractor         IPExtractor
+
+		catchAll    *radix.Tree
+		IPExtractor IPExtractor
 	}
 
 	// routeStore stores route paths and the corresponding handlers.
@@ -58,6 +62,7 @@ func New() *Router {
 	r := &Router{
 		namedRoutes: make(map[string]*Route),
 		stores:      make(map[string]routeStore),
+		catchAll:    radix.New(),
 	}
 	r.RouteGroup = *newRouteGroup("", r, make([]Handler, 0))
 	r.NotFound(MethodNotAllowedHandler, NotFoundHandler)
@@ -162,6 +167,12 @@ func (r *Router) find(method, path string, pvalues []string) (handlers []Handler
 	if hh != nil {
 		return hh.([]Handler), pnames
 	}
+
+	_, hh, ok := r.catchAll.LongestPrefix(path)
+	if ok {
+		return append(r.handlers, hh.([]Handler)...), pnames
+	}
+
 	return r.notFoundHandlers, pnames
 }
 
