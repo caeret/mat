@@ -170,7 +170,7 @@ func (r *Router) find(method, path string, pvalues []string) (handlers []Handler
 
 	_, hh, ok := r.catchAll.LongestPrefix(path)
 	if ok {
-		return append(r.handlers, hh.([]Handler)...), pnames
+		return hh.([]Handler), pnames
 	}
 
 	return r.notFoundHandlers, pnames
