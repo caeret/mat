@@ -5,6 +5,7 @@
 package mat
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"strings"
@@ -151,7 +152,7 @@ func (c *Context) URL(route string, pairs ...interface{}) string {
 	return ""
 }
 
-// RealIP returns the real client ip
+// RealIP returns the real client ip.
 func (c *Context) RealIP() string {
 	if c.router.IPExtractor != nil {
 		return c.router.IPExtractor(c.Request)
@@ -205,6 +206,11 @@ func (c *Context) WriteWithStatus(data interface{}, statusCode int) error {
 func (c *Context) SetDataWriter(writer DataWriter) {
 	c.writer = writer
 	writer.SetHeader(c.Response)
+}
+
+// Context returns the request context.
+func (c *Context) Context() context.Context {
+	return c.Request.Context()
 }
 
 // init sets the request and response of the context and resets all other properties.
