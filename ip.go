@@ -103,7 +103,7 @@ func ExtractIPFromRealIPHeader(options ...TrustOption) IPExtractor {
 	return func(req *http.Request) string {
 		realIP := req.Header.Get(HeaderXRealIP)
 		if realIP != "" {
-			if ip := net.ParseIP(realIP); ip != nil && checker.trust(ip) {
+			if ip := net.ParseIP(extractIP(req)); ip != nil && checker.trust(ip) {
 				return realIP
 			}
 		}
