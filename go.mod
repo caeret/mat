@@ -1,6 +1,6 @@
 module github.com/caeret/mat
 
-go 1.13
+go 1.18
 
 require (
 	github.com/armon/go-radix v1.0.0

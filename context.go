@@ -48,6 +48,17 @@ func (c *Context) Param(name string) string {
 	return ""
 }
 
+// Params returns the named parameter values that are found in the URL path matching the current route.
+// If the named parameter cannot be found, an empty string will be returned.
+func (c *Context) Params() map[string]string {
+	params := make(map[string]string, len(c.pnames))
+	for i, n := range c.pnames {
+		params[n] = c.pvalues[i]
+	}
+	return params
+
+}
+
 // SetParam sets the named parameter value.
 // This method is primarily provided for writing unit tests.
 func (c *Context) SetParam(name, value string) {
