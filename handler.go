@@ -2,6 +2,7 @@ package mat
 
 import (
 	"context"
+	"fmt"
 	"github.com/caeret/mat/decoder"
 	"net/http"
 	"reflect"
@@ -15,6 +16,10 @@ type StatusCoder interface {
 // Headerer allows you to customise the HTTP headers.
 type Headerer interface {
 	Header() http.Header
+}
+
+type ContextAware interface {
+	WithContext(c *Context) error
 }
 
 // Handle is the type for your handlers.
@@ -95,6 +100,15 @@ func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) request
 
 		if header != nil {
 			if err := header.DecodeValue((decoder.Header)(c.Request.Header), val); err != nil {
+				return err
+			}
+		}
+
+		fmt.Printf("%#v\n", *v)
+
+		if ca, ok := any(v).(ContextAware); ok {
+			err := ca.WithContext(c)
+			if err != nil {
 				return err
 			}
 		}
