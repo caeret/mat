@@ -6,7 +6,11 @@ import (
 	"github.com/caeret/mat/decoder"
 	"net/http"
 	"reflect"
+	"runtime"
+	"sync"
 )
+
+var handleMap sync.Map
 
 // StatusCoder allows you to customise the HTTP response code.
 type StatusCoder interface {
@@ -30,7 +34,7 @@ func H[T, O any](handle Handle[T, O]) Handler {
 	pool := decoder.NewRequestPool(*new(T))
 	decodeRequest := newRequestDecoder(*new(T))
 
-	return func(c *Context) error {
+	h := func(c *Context) error {
 		var res any
 
 		req := pool.Get()
@@ -57,6 +61,9 @@ func H[T, O any](handle Handle[T, O]) Handler {
 
 		return c.Write(res)
 	}
+
+	handleMap.Store(reflect.ValueOf(h).Pointer(), runtime.FuncForPC(reflect.ValueOf(handle).Pointer()).Name())
+	return h
 }
 
 type requestDecoder[V any] func(v *V, c *Context) error
