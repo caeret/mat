@@ -68,19 +68,20 @@ func H[T, O any](handle Handle[T, O]) Handler {
 type requestDecoder[V any] func(v *V, c *Context) error
 
 func newRequestDecoder[V any](v V) requestDecoder[V] {
-	path, _ := decoder.NewCached(v, "param")
+	path, _ := decoder.NewCached(v, "path")
 	query, _ := decoder.NewCached(v, "query")
 	header, _ := decoder.NewCached(v, "header")
+	param, _ := decoder.NewCached(v, "param")
 
-	if path == nil && query == nil && header == nil {
-		return decodeBody[V]()
+	if path == nil && query == nil && header == nil && param == nil {
+		return decodeBody[V](true)
 	}
 
-	return decodeRequest(path, query, header)
+	return decodeRequest(path, query, header, param)
 }
 
-func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) requestDecoder[V] {
-	body := decodeBody[V]()
+func decodeRequest[V any](path, query, header, param *decoder.CachedDecoder[V]) requestDecoder[V] {
+	body := decodeBody[V](false)
 	return func(v *V, c *Context) error {
 		if err := body(v, c); err != nil {
 			return err
@@ -88,9 +89,7 @@ func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) request
 
 		val := reflect.ValueOf(v).Elem()
 
-		p := c.Params()
-
-		if path != nil && len(p) > 0 {
+		if p := c.Params(); path != nil && len(p) > 0 {
 			if err := path.DecodeValue((decoder.Params)(p), val); err != nil {
 				return err
 			}
@@ -110,6 +109,13 @@ func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) request
 			}
 		}
 
+		if param != nil {
+			p := decoder.Params{"ip": c.RealIP()}
+			if err := param.DecodeValue(p, val); err != nil {
+				return err
+			}
+		}
+
 		if ca, ok := any(v).(ContextAware); ok {
 			err := ca.WithContext(c)
 			if err != nil {
@@ -121,8 +127,17 @@ func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) request
 	}
 }
 
-func decodeBody[V any]() requestDecoder[V] {
+func decodeBody[V any](enable bool) requestDecoder[V] {
 	return func(v *V, c *Context) error {
+		if enable {
+			if ca, ok := any(v).(ContextAware); ok {
+				err := ca.WithContext(c)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		if c.Request.ContentLength == 0 || c.Request.Method == http.MethodGet || c.Request.Method == http.MethodHead {
 			return nil
 		}
