@@ -2,7 +2,6 @@ package mat
 
 import (
 	"context"
-	"fmt"
 	"github.com/caeret/mat/decoder"
 	"net/http"
 	"reflect"
@@ -110,8 +109,6 @@ func decodeRequest[V any](path, query, header *decoder.CachedDecoder[V]) request
 				return err
 			}
 		}
-
-		fmt.Printf("%#v\n", *v)
 
 		if ca, ok := any(v).(ContextAware); ok {
 			err := ca.WithContext(c)
